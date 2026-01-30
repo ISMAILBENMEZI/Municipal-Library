@@ -8,7 +8,12 @@
 </head>
 
 <body class="bg-gray-100 font-sans">
-
+    @if (session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 shadow-md rounded relative" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <span class="block sm:inline">{{ session('error') }}</span>
+        </div>
+    @endif
     <nav class="bg-white shadow-lg mb-8">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -61,6 +66,10 @@
                 <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     📚 Books Collection
                 </h2>
+                <a href="{{ route('books.trash') }}"
+                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2">
+                    🗑️ View Trash
+                </a>
                 <a href="{{ route('books.create') }}"
                     class="bg-blue-600 text-white px-5 py-2.5 rounded hover:bg-blue-700 transition shadow flex items-center gap-2">
                     <span class="text-lg">+</span> Add New Book
@@ -104,11 +113,12 @@
                                 </td>
                                 <td class="py-3 px-6 text-center">
                                     <div class="flex item-center justify-center gap-4">
-                                        <a href="#"
+                                        <a href="{{ route('books.edit', $book->id) }}"
                                             class="w-4 mr-2 transform hover:text-purple-500 hover:scale-110">
                                             ✏️
                                         </a>
-                                        <form action="#" method="POST" onsubmit="return confirm('Are you sure?');">
+                                        <form action="{{ route('books.destroy', $book->id) }}" method="POST"
+                                            onsubmit="return confirm('Are you sure?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -177,7 +187,15 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-6 text-center">
-                                    <a href="#" class="text-red-500 hover:text-red-700 hover:underline">Remove</a>
+                                    <form action="{{ route('members.destroy', $member->id) }}" method="POST"
+                                        onsubmit="return confirm('Are you sure?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="text-red-500 hover:text-red-700 hover:underline">
+                                            Remove
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

@@ -65,12 +65,88 @@ class BookController extends Controller
             'user_id' => Auth::id(),
             'book_id' => $book->id,
 
-            'borrowing_date' =>$today,
+            'borrowing_date' => $today,
             'return_date' => $nextMonth,
         ]);
 
         $book->update(['status' => 'borrowed']);
 
         return redirect()->route('books.index')->with('success', 'Book borrowed successfully!');
+    }
+
+    public function returnBook($id)
+    {
+        $book = Book::findOrFail($id);
+        $user = Auth::user();
+
+        $user->borrowedBooks()->detach($book->id);
+
+        $book->update(['status' => 'available']);
+
+        return back()->with('success', 'Book returned successfully!');
+    }
+
+    public function edit($id)
+    {
+        $book = Book::findOrFail($id);
+        return view('books.edit', compact('book'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $book = Book::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required',
+            'author' => 'required',
+            'description' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'author' => $request->author,
+            'description' => $request->description,
+        ];
+
+        if ($request->hasFile('image')) {
+            if ($book->image && file_exists(public_path('images/' . $book->image))) {
+                unlink(public_path('images/' . $book->image));
+            }
+
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $imageName);
+
+            $data['image'] = $imageName;
+        }
+
+        $book->update($data);
+
+        return redirect()->route('librarian.dashboard')->with('success', 'Book updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $book = Book::findOrFail($id);
+
+        if ($book->status !== 'available') {
+            return back()->with('error', 'Cannot delete this book because it is currently borrowed by a member.');
+        }
+
+        $book->delete();
+        return back()->with('success', 'Book moved to trash successfully!');
+    }
+
+    public function trash()
+    {
+        $deletedBooks = Book::onlyTrashed()->get();
+        return view('books.trash', compact('deletedBooks'));
+    }
+
+    public function restore($id)
+    {
+        $book = Book::withTrashed()->findOrFail($id);
+        $book->restore();
+        return back()->with('success', 'Book restored successfully!');
     }
 }

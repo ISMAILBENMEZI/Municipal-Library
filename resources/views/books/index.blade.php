@@ -18,31 +18,43 @@
     @endif
 
     <nav class="max-w-7xl mx-auto bg-white p-4 rounded-lg shadow mb-8 flex justify-between items-center">
+
         <div class="font-bold text-gray-700">
-            👤 Welcome, <span class="text-blue-600">{{ Auth::user()->name }}</span>
+            @auth
+                👤 Welcome, <span class="text-blue-600">{{ Auth::user()->name }}</span>
+            @else
+                👋 Welcome, <span class="text-blue-600">Visitor</span>
+            @endauth
         </div>
 
         <div class="flex gap-4 items-center">
 
-            @if (Auth::user()->role === 'librarian')
-                <a href="{{ route('librarian.dashboard') }}"
-                    class="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 transition font-bold shadow-md flex items-center gap-2 text-sm">
-                    🛡️ Dashboard
+            @auth
+                @if (Auth::user()->role === 'librarian')
+                    <a href="{{ route('librarian.dashboard') }}"
+                        class="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 transition font-bold shadow-md flex items-center gap-2 text-sm">
+                        🛡️ Dashboard
+                    </a>
+                @endif
+
+                <a href="{{ route('members.index') }}"
+                    class="text-blue-600 hover:text-blue-800 font-semibold hover:underline flex items-center gap-1">
+                    <span>My Profile</span> 📖
                 </a>
-            @endif
 
-            <a href="{{ route('members.index') }}"
-                class="text-blue-600 hover:text-blue-800 font-semibold hover:underline flex items-center gap-1">
-                <span>My Profile</span> 📖
-            </a>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit"
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition shadow-sm">
+                        Logout
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 font-semibold transition">
+                    Login
+                </a>
+            @endauth
 
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit"
-                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition shadow-sm">
-                    Logout
-                </button>
-            </form>
         </div>
     </nav>
 
